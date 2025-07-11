@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Update Fee Item</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+    select, input { margin: 10px; padding: 8px; width: 250px; }
+    button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background: #45a049; }
+    .message { margin-top: 20px; font-weight: bold; }
+    .table-container { width: 100%; overflow-x: auto; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; min-width: 800px; }
+    th, td { padding: 8px; text-align: center; border: 1px solid #ddd; }
+    th { background-color: #f2f2f2; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    tr:hover { background-color: #f1f1f1; }
+
+    /* Password Overlay */
+    #passwordOverlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    #passwordBox {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      text-align: center;
+      width: 300px;
+    }
+    #passwordBox h3 {
+      margin-bottom: 20px;
+      font-weight: normal;
+      color: #333;
+    }
+    #passwordInput {
+      padding: 10px;
+      width: 100%;
+      margin-bottom: 15px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    #passwordSubmit {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 0;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    #passwordSubmit:hover {
+      background: #45a049;
+    }
+    #passwordError {
+      color: red;
+      font-weight: bold;
+      margin-top: 10px;
+      min-height: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Password Overlay -->
+  <div id="passwordOverlay">
+    <div id="passwordBox">
+      <h3>Please enter the password to continue</h3>
+      <input type="password" id="passwordInput" placeholder="Enter password" autofocus />
+      <button id="passwordSubmit">Submit</button>
+      <div id="passwordError"></div>
+    </div>
+  </div>
+
+  <h2>Update Fee Item</h2>
+  <form id="feeForm">
+    <select id="grade" required>
+      <option value="">Select Grade</option>
+      <option>PLAYGROUP</option>
+      <option>PP1</option>
+      <option>PP2</option>
+      <option>GRADE 1</option>
+      <option>GRADE 2</option>
+      <option>GRADE 3</option>
+      <option>GRADE 4</option>
+      <option>GRADE 5</option>
+      <option>GRADE 6</option>
+      <option>GRADE 7</option>
+      <option>GRADE 8</option>
+      <option>GRADE 9</option>
+      <option>GRADE 10</option>
+      <option>GRADE 11</option>
+      <option>GRADE 12</option>
+    </select><br>
+
+    <select id="term" required>
+      <option value="">Select Term</option>
+      <option>1</option>
+      <option>2</option>
+      <option>3</option>
+    </select><br>
+
+    <select id="feeType" required>
+      <option value="">Select Fee Type</option>
+      <option>Tuition</option>
+      <option>Fee</option>
+      <option>BookFund</option>
+      <option>Computer</option>
+      <option>Lunch</option>
+      <option>Porridge</option>
+      <option>Exam</option>
+      <option>Diary</option>
+      <option>Assessment</option>
+      <option>Reams</option>
+      <option>Stationery</option>
+      <option>Activity</option>
+      <option>Admission</option>
+      <option>Interview</option>
+      <option>Track suit</option>
+      <option>Sweater</option>
+    </select><br>
+
+    <input type="number" id="newAmount" placeholder="Enter New Amount" required><br>
+
+    <button type="submit">Update Fee</button>
+  </form>
+
+  <div class="message" id="message"></div>
+
+  <h2>Current Fee Structure</h2>
+  <div class="table-container">
+    <div id="feeTable"></div>
+  </div>
+
+  <script>
+    const correctPassword = "ADMIN1";
+
+    // Password UI elements
+    const passwordOverlay = document.getElementById('passwordOverlay');
+    const passwordInput = document.getElementById('passwordInput');
+    const passwordSubmit = document.getElementById('passwordSubmit');
+    const passwordError = document.getElementById('passwordError');
+
+    function checkPassword() {
+      const entered = passwordInput.value.trim();
+      if (entered === correctPassword) {
+        passwordOverlay.style.display = 'none';
+      } else {
+        passwordError.textContent = 'Incorrect password, please try again.';
+        passwordInput.value = '';
+        passwordInput.focus();
+      }
+    }
+
+    passwordSubmit.addEventListener('click', checkPassword);
+    passwordInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        checkPassword();
+      }
+    });
+
+    // Your existing fee update code starts here
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwQZDchqZQ34feNc_GJv008EsvHEpHpyzUbZ4z-P4NbzWEEx1dKEcidDstDRSUS4SuW/exec'; // Replace with your deployed web app URL
+
+    const form = document.getElementById('feeForm');
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      document.getElementById('message').style.color = 'red';
+      document.getElementById('message').textContent = 'Please wait! Updating...';
+
+      const grade = document.getElementById('grade').value;
+      const term = document.getElementById('term').value;
+      const feeType = document.getElementById('feeType').value;
+      const newAmount = document.getElementById('newAmount').value;
+
+      fetch(`${scriptUrl}?action=updateFee&grade=${encodeURIComponent(grade)}&term=${encodeURIComponent(term)}&feeType=${encodeURIComponent(feeType)}&newAmount=${encodeURIComponent(newAmount)}`)
+        .then(response => response.text())
+        .then(responseText => {
+          if (responseText === "Update successful!") {
+            document.getElementById('message').style.color = 'green';
+            loadFeeTable(); // Reload the table after update
+          } else {
+            document.getElementById('message').style.color = 'red';
+          }
+          document.getElementById('message').textContent = responseText;
+          form.reset();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('message').style.color = 'red';
+          document.getElementById('message').textContent = 'An error occurred.';
+        });
+    });
+
+    function loadFeeTable() {
+      fetch(`${scriptUrl}?action=getFeeStructure`)
+        .then(response => response.json())
+        .then(data => {
+          console.log('Fetched Data:', data); // Log the fetched data for debugging
+
+          let tableHtml = '<table border="1">';
+          // Assuming the first row contains headers
+          data.forEach(function(row, rowIndex) {
+            tableHtml += '<tr>';
+            row.forEach(function(cell) {
+              tableHtml += rowIndex === 0 ? `<th>${cell}</th>` : `<td>${cell}</td>`;
+            });
+            tableHtml += '</tr>';
+          });
+          tableHtml += '</table>';
+          document.getElementById('feeTable').innerHTML = tableHtml;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          document.getElementById('feeTable').innerHTML = '<p style="color:red;">Failed to load table.</p>';
+        });
+    }
+
+    window.onload = loadFeeTable;
+  </script>
+
+</body>
+</html>
